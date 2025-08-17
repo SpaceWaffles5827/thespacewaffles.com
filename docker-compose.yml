@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  traefik:
+    image: traefik:v2.11
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      # auto-redirect HTTP -> HTTPS
+      - --entrypoints.web.http.redirections.entryPoint.to=websecure
+      - --entrypoints.web.http.redirections.entryPoint.scheme=https
+      # Let's Encrypt (HTTP-01)
+      - --certificatesresolvers.le.acme.email=${EMAIL}
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.le.acme.httpchallenge=true
+      - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_letsencrypt:/letsencrypt
+    networks: [traefik]
+
+  web:
+    build: .
+    environment:
+      NODE_ENV: "production"
+      DATABASE_URL: "file:/data/spacewaffles.db"
+    volumes:
+      - data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      # route apex domain
+      - "traefik.http.routers.space.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.space.entrypoints=websecure"
+      - "traefik.http.routers.space.tls.certresolver=le"
+      - "traefik.http.services.space.loadbalancer.server.port=3000"
+      # (optional) also answer www
+      - "traefik.http.routers.space-www.rule=Host(`www.${DOMAIN}`)"
+      - "traefik.http.routers.space-www.entrypoints=websecure"
+      - "traefik.http.routers.space-www.tls.certresolver=le"
+      - "traefik.http.routers.space-www.service=space"
+    networks: [traefik]
+
+networks:
+  traefik:
+    name: traefik
+
+volumes:
+  data:
+  traefik_letsencrypt:

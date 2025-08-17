@@ -179,35 +179,6 @@ export default function Page() {
         </div>
       </VScroller>
 
-      {/* image hero strip */}
-      <center>
-        <div className="heroWrap" style={{ width: 1100 }}>
-          <Scroller className="heroStrip" speed={40}>
-            <div className="heroItem">
-              <NetImg sources={['https://www.animatedimages.org/data/media/202/animated-rocket-image-0008.gif', 'https://placehold.co/180x120?text=ROCKET']} alt="Rocket" />
-            </div>
-            <div className="heroItem">
-              <NetImg sources={['https://www.animatedimages.org/data/media/80/animated-discoball-image-0020.gif', 'https://placehold.co/180x120?text=DISCO']} alt="Disco" />
-            </div>
-            <div className="heroItem">
-              <NetImg sources={['https://www.animatedimages.org/data/media/709/animated-stars-image-0002.gif', 'https://placehold.co/180x120?text=STARS']} alt="Stars" />
-            </div>
-            <div className="heroItem">
-              <NetImg sources={['https://www.animatedimages.org/data/media/190/animated-computer-image-0013.gif', 'https://placehold.co/180x120?text=PC']} alt="Computer" />
-            </div>
-            <div className="heroItem">
-              <NetImg sources={['https://picsum.photos/seed/spacewaffle1/200/120', 'https://placehold.co/200x120?text=IMG']} alt="Random" />
-            </div>
-            <div className="heroItem">
-              <NetImg sources={['https://picsum.photos/seed/spacewaffle2/200/120', 'https://placehold.co/200x120?text=IMG']} alt="Random" />
-            </div>
-            <div className="heroItem">
-              <NetImg sources={['https://picsum.photos/seed/spacewaffle3/200/120', 'https://placehold.co/200x120?text=IMG']} alt="Random" />
-            </div>
-          </Scroller>
-        </div>
-      </center>
-
       {/* three-column TABLE LAYOUT like it's 1999 */}
       <center>
         <table className="layout" width="1100" cellPadding={12} cellSpacing={0}>
@@ -242,13 +213,14 @@ export default function Page() {
                   </div>
                 </div>
                 <div className="badges">
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/netscape-now.gif', 'https://placehold.co/88x31?text=NETSCAPE']} alt="Netscape Now" />
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/ie6.gif', 'https://placehold.co/88x31?text=IE6']} alt="IE6" />
+                  <NetImg sources={['https://cyber.dabamos.de/88x31/nedscape_now.gif']} alt="Netscape Now" />
+                  <NetImg sources={['https://cyber.dabamos.de/88x31/ie_exploder.gif', 'https://placehold.co/88x31?text=IE6']} alt="IE6" />
                   <NetImg sources={['https://cyber.dabamos.de/88x31/valid-html32.gif', 'https://placehold.co/88x31?text=HTML+3.2']} alt="Valid HTML 3.2" />
                   <NetImg sources={['https://cyber.dabamos.de/88x31/linux.gif', 'https://placehold.co/88x31?text=LINUX']} alt="Linux" />
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/y2k-compliant.gif', 'https://placehold.co/88x31?text=Y2K']} alt="Y2K" />
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/wi-fi.gif', 'https://placehold.co/88x31?text=WIFI']} alt="WiFi" />
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/under-construction.gif', 'https://placehold.co/88x31?text=UNDER']} alt="Under Construction" />
+                  <NetImg sources={['https://cyber.dabamos.de/88x31/aol_instant3.gif', 'https://placehold.co/88x31?text=Y2K']} alt="Y2K" />
+                  <NetImg sources={['https://cyber.dabamos.de/88x31/spotify.gif', 'https://placehold.co/88x31?text=WIFI']} alt="WiFi" />
+                  <NetImg sources={['https://cyber.dabamos.de/88x31/tipsba.gif', 'https://placehold.co/88x31?text=UNDER']} alt="Under Construction" />
+                  <NetImg sources={['https://cyber.dabamos.de/88x31/midinote.gif', 'https://placehold.co/88x31?text=UNDER']} alt="Under Construction" />
                 </div>
               </td>
 
@@ -287,10 +259,6 @@ export default function Page() {
                       <td className="panelBody spacious">
                         <Scroller speed={35}>
                           <NetImg sources={['https://picsum.photos/seed/waffleA/240/140', 'https://placehold.co/240x140?text=IMG']} alt="img" className="stripImg" />
-                          <NetImg sources={['https://picsum.photos/seed/waffleB/240/140', 'https://placehold.co/240x140?text=IMG']} alt="img" className="stripImg" />
-                          <NetImg sources={['https://picsum.photos/seed/waffleC/240/140', 'https://placehold.co/240x140?text=IMG']} alt="img" className="stripImg" />
-                          <NetImg sources={['https://picsum.photos/seed/waffleD/240/140', 'https://placehold.co/240x140?text=IMG']} alt="img" className="stripImg" />
-                          <NetImg sources={['https://picsum.photos/seed/waffleE/240/140', 'https://placehold.co/240x140?text=IMG']} alt="img" className="stripImg" />
                         </Scroller>
                         <div className="ticker">★ SPACE • WAFFLES • DOT • COM • SPACE • WAFFLES • DOT • COM ★</div>
                       </td>
@@ -324,8 +292,7 @@ export default function Page() {
                         <div className="catFrame">
                           <NetImg
                             sources={[
-                              'https://loremflickr.com/240/240/tabby,cat/all',
-                              'https://placekitten.com/240/240'
+                              '/thor.jpg',
                             ]}
                             alt="Grey tabby cat mascot"
                           />
@@ -338,10 +305,10 @@ export default function Page() {
                 </table>
 
                 <div className="stickerWall">
-                  <NetImg sources={['https://www.animatedimages.org/data/media/562/animated-under-construction-image-0012.gif', 'https://placehold.co/180x40?text=CONSTRUCTION']} alt="Under Construction" />
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/linux-penguin.gif', 'https://placehold.co/180x40?text=LINUX']} alt="Linux" />
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/y2k-compliant.gif', 'https://placehold.co/180x40?text=Y2K']} alt="Y2K" />
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/under-contruction2.gif', 'https://placehold.co/180x40?text=GIF']} alt="88x31" />
+                  <NetImg sources={['https://cyber.dabamos.de/88x31/construction.gif', 'https://placehold.co/180x40?text=LINUX']} alt="Linux" />
+                  <NetImg sources={['https://cyber.dabamos.de/88x31/archlinux.gif']} alt="Under Construction" />
+                  <NetImg sources={['https://cyber.dabamos.de/88x31/hash_now.gif', 'https://placehold.co/180x40?text=Y2K']} alt="Y2K" />
+                  <NetImg sources={['https://cyber.dabamos.de/88x31/pp-free.gif', 'https://placehold.co/180x40?text=GIF']} alt="88x31" />
                 </div>
               </td>
             </tr>
