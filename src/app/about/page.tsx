@@ -1,100 +1,16 @@
 'use client'
 
-import React, { useMemo, useRef, useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import Link from 'next/link'
 
 const REQUESTS_URL = 'https://requests.thespacewaffles.com/'
 const MOVIES_URL = 'https://jellyfin.thespacewaffles.com/'
 
-type Post = {
-    slug: string
-    title: string
-    excerpt: string
-    publishedAt: string // ISO date
-    tags: string[]
-}
-
-const POSTS: Post[] = [
-    {
-        slug: 'reverse-proxies-and-certs',
-        title: 'Reverse Proxies + Certs: My Setup',
-        excerpt:
-            'Notes from my homelab: Traefik vs. NPM, automatic TLS with Let’s Encrypt, and hardening tips for media servers.',
-        publishedAt: '2025-07-05',
-        tags: ['infra', 'security', 'homelab'],
-    },
-    {
-        slug: 'starfield-canvas',
-        title: 'Starfield Canvas: Twinkles & Comets',
-        excerpt:
-            'How the animated background works: layers, twinkle math, comet fade lifetimes, and respecting reduced-motion.',
-        publishedAt: '2025-06-23',
-        tags: ['frontend', 'canvas', 'effects'],
-    },
-    {
-        slug: 'jellyfin-hardening',
-        title: 'Hardening Jellyfin for Friends & Fam',
-        excerpt:
-            'A quick pass on users, rate limiting, reverse proxy headers, and why you should separate request portals.',
-        publishedAt: '2025-05-17',
-        tags: ['media', 'jellyfin', 'security'],
-    },
-    {
-        slug: 'requests-portal',
-        title: 'Requests Portal: From Sheet to App',
-        excerpt:
-            'The little app that could: auth, rate limiting, metadata fetch, and a minimal “done-not-perfect” UI.',
-        publishedAt: '2025-03-12',
-        tags: ['apps', 'frontend', 'product'],
-    },
-    {
-        slug: 'homelab-backups',
-        title: 'Homelab Backups I’ll Actually Do',
-        excerpt:
-            'Incrementals, offsite sync, and the boring routines that keep movie nights stress-free.',
-        publishedAt: '2024-12-04',
-        tags: ['homelab', 'infra'],
-    },
-    {
-        slug: '90s-skin',
-        title: 'Giving the Site a 90s Skin (Tastefully)',
-        excerpt:
-            'Gradients, badges, and pixel accents without sacrificing readability or performance.',
-        publishedAt: '2024-10-19',
-        tags: ['design', 'retro', 'frontend'],
-    },
-]
-
-export default function BlogPage() {
-    const [query, setQuery] = useState('')
-    const [activeTags, setActiveTags] = useState<string[]>([])
-
-    const tags = useMemo(() => {
-        const all = new Set<string>()
-        POSTS.forEach(p => p.tags.forEach(t => all.add(t)))
-        return Array.from(all).sort()
-    }, [])
-
-    const filtered = useMemo(() => {
-        const q = query.trim().toLowerCase()
-        return POSTS.filter(p => {
-            const matchesQ =
-                !q ||
-                p.title.toLowerCase().includes(q) ||
-                p.excerpt.toLowerCase().includes(q) ||
-                p.tags.some(t => t.toLowerCase().includes(q))
-            const matchesTags =
-                activeTags.length === 0 || activeTags.every(t => p.tags.includes(t))
-            return matchesQ && matchesTags
-        }).sort((a, b) => +new Date(b.publishedAt) - +new Date(a.publishedAt))
-    }, [query, activeTags])
-
-    const toggleTag = (t: string) =>
-        setActiveTags(prev => (prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]))
-
+export default function AboutPage() {
     return (
         <main className="relative flex min-h-dvh flex-col text-[#f4f8ff] antialiased selection:bg-cyan-200/40 selection:text-white">
-            {/* Animated background */}
+
+            {/* Animated background layers */}
             <AnimatedBG90s />
 
             {/* Top strip */}
@@ -104,7 +20,7 @@ export default function BlogPage() {
                     <nav className="space-x-2">
                         <Link className="hover:underline" href="/">Home</Link>
                         <span className="opacity-60">•</span>
-                        <Link className="hover:underline" href="/about">About</Link>
+                        <Link className="hover:underline" href="/status">Status</Link>
                         <span className="opacity-60">•</span>
                         <Link className="hover:underline" href="/contact">Contact</Link>
                     </nav>
@@ -134,119 +50,102 @@ export default function BlogPage() {
                 </div>
             </header>
 
-            {/* Nav + marquee (fixed version) */}
+            {/* Nav */}
             <nav className="border-t border-white/10 bg-gradient-to-b from-[#192a58] to-[#0f1c3e] shadow-[inset_0_-1px_0_rgba(255,255,255,.05),0_8px_20px_rgba(0,0,0,.35)]">
                 <div className="mx-auto max-w-[960px] px-2 py-1">
-                    <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[auto_1fr]">
-                        <div className="flex gap-1 flex-nowrap overflow-x-auto no-scrollbar">
-                            <NavPill href="/">Home</NavPill>
-                            <NavPill href="/blog">Blog</NavPill>
-                            <NavPill href="/portfolio">Portfolio</NavPill>
-                            <NavPill href="/gallery">Gallery</NavPill>
-                            <NavPill href="/contact">Contact</NavPill>
-                            <NavPill href={REQUESTS_URL}>Request</NavPill>
-                            <NavPill href={MOVIES_URL}>Movies</NavPill>
-                        </div>
-                        <div className="hidden sm:block overflow-hidden">
-                            <div className="animate-marquee whitespace-nowrap py-0.5 text-[#e2edff]">
-                                ✨ Blog updates • homelab notes • frontend tricks • media server hardening ✨
-                            </div>
-                        </div>
+                    <div className="flex flex-wrap gap-1">
+                        <NavPill href="/">Home</NavPill>
+                        <NavPill href="/about">About</NavPill>
+                        <NavPill href="/blog">Blog</NavPill>
+                        <NavPill href="/portfolio">Portfolio</NavPill>
+                        <NavPill href="/gallery">Gallery</NavPill>
+                        <NavPill href={REQUESTS_URL}>Request</NavPill>
+                        <NavPill href={MOVIES_URL}>Movies</NavPill>
                     </div>
                 </div>
             </nav>
 
-            {/* Layout */}
-            <div className="mx-auto grid max-w-[960px] grid-cols-1 gap-2 px-2 py-4 md:grid-cols-[220px_1fr_240px]">
-                {/* LEFT: Filters */}
-                <aside className="space-y-2">
-                    <Panel title="Search">
-                        <input
-                            value={query}
-                            onChange={e => setQuery(e.target.value)}
-                            placeholder="Search posts…"
-                            className="w-full rounded border border-[#314b8f] bg-[#0b1530] px-3 py-2 text-[13px] text-[#eaf2ff] placeholder:text-[#9db9f0] shadow-[inset_0_1px_0_rgba(255,255,255,.12)]"
-                        />
-                    </Panel>
-
-                    <Panel title="Tags">
-                        <div className="flex flex-wrap gap-2">
-                            {tags.map(t => {
-                                const on = activeTags.includes(t)
-                                return (
-                                    <button
-                                        key={t}
-                                        onClick={() => toggleTag(t)}
-                                        className={[
-                                            'rounded-md border px-2 py-1 text-[12px] font-black shadow-[inset_0_1px_0_rgba(255,255,255,.15)]',
-                                            on
-                                                ? 'border-[#6e5717] bg-[linear-gradient(#ffe084,#ffbe3a)] text-[#231900]'
-                                                : 'border-[#314b8f] bg-[linear-gradient(#233b79,#132657)] text-[#eaf2ff] hover:brightness-105',
-                                        ].join(' ')}
-                                        aria-pressed={on}
-                                    >
-                                        #{t}
-                                    </button>
-                                )
-                            })}
-                            {tags.length === 0 && <div className="text-[12px] text-[#cfe0ff]/70">No tags yet.</div>}
-                        </div>
-                        {activeTags.length > 0 && (
-                            <div className="mt-2 text-right">
-                                <button
-                                    onClick={() => setActiveTags([])}
-                                    className="text-[12px] underline text-[#cfe0ff]"
-                                >
-                                    Clear tags
-                                </button>
-                            </div>
-                        )}
-                    </Panel>
-                </aside>
-
-                {/* CENTER: Posts */}
-                <section className="space-y-2">
-                    <Panel title="BLOG" shine>
-                        <div className="grid gap-2 sm:grid-cols-2">
-                            {filtered.map(p => (
-                                <PostCard key={p.slug} post={p} />
-                            ))}
-                        </div>
-                        {filtered.length === 0 && (
-                            <div className="text-[13px] text-[#cfe0ff]">No posts found. Try a different search or clear filters.</div>
-                        )}
-                    </Panel>
-                </section>
-
-                {/* RIGHT: Sidebar */}
-                <aside className="space-y-2">
-                    <Panel title="About the Blog">
-                        <p className="text-[13px] leading-7">
-                            Notes from the homelab, frontend experiments, and media-server tinkering.
-                            Mostly for friends & family—and anyone who likes a little retro.
+            {/* Content */}
+            <div className="mx-auto grid max-w-[960px] grid-cols-1 gap-2 px-2 py-4">
+                <Panel title="ABOUT SPACE WAFFLES" shine>
+                    <div className="space-y-3 text-[13px] leading-7">
+                        <p>
+                            <b>Space Waffles</b> is my cozy corner of the web: a retro-styled portal for my movie library,
+                            side projects, and notes from the homelab. It’s equal parts nostalgia and tinkering.
                         </p>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                            <RetroBtn href={REQUESTS_URL} variant="gold" small>Request a Title</RetroBtn>
-                            <RetroBtn href={MOVIES_URL} variant="steel" small>Open Library</RetroBtn>
-                        </div>
-                    </Panel>
-
-                    <Panel title="Recent">
-                        <ul className="ml-4 list-disc text-[13px] leading-7">
-                            {POSTS.slice()
-                                .sort((a, b) => +new Date(b.publishedAt) - +new Date(a.publishedAt))
-                                .slice(0, 5)
-                                .map(p => (
-                                    <li key={p.slug}>
-                                        <Link className="underline" href={`/blog/${p.slug}`}>
-                                            {p.title}
-                                        </Link>
-                                        <span className="opacity-70"> — {formatDate(p.publishedAt)}</span>
-                                    </li>
-                                ))}
+                        <ul className="ml-5 list-disc">
+                            <li>No trackers. No pop-ups. No ads.</li>
+                            <li>Built for friends & family: request a title, grab some popcorn, enjoy.</li>
+                            <li>Uptime & status are public because I like honest dashboards.</li>
                         </ul>
-                    </Panel>
-                </aside>
+                    </div>
+                </Panel>
+
+                <Panel title="COLOPHON (STACK)">
+                    <div className="grid gap-3 sm:grid-cols-2 text-[13px] leading-7">
+                        <div>
+                            <div className="font-black text-[#eaf2ff] mb-1">Frontend</div>
+                            <ul className="ml-5 list-[square]">
+                                <li>Next.js • React • TypeScript</li>
+                                <li>Tailwind CSS</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <div className="font-black text-[#eaf2ff] mb-1">Infra</div>
+                            <ul className="ml-5 list-[square]">
+                                <li>Docker on Linux</li>
+                                <li>Reverse proxy with Traefik / NPM</li>
+                                <li>Let’s Encrypt TLS</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <div className="font-black text-[#eaf2ff] mb-1">Media</div>
+                            <ul className="ml-5 list-[square]">
+                                <li>Jellyfin for streaming</li>
+                                <li>Requests portal for friends</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <div className="font-black text-[#eaf2ff] mb-1">Design</div>
+                            <ul className="ml-5 list-[square]">
+                                <li>90s UI vibes, pixel accents</li>
+                                <li>Custom starfield (canvas) with comets</li>
+                            </ul>
+                        </div>
+                    </div>
+                </Panel>
+
+                <Panel title="POLICY & ETHOS">
+                    <div className="space-y-2 text-[13px] leading-7">
+                        <p><b>Privacy:</b> I don’t run analytics or invasive scripts. Visitor counter is local to your browser.</p>
+                        <p><b>Requests:</b> Intended for personal, fair-use viewing. If something’s broken, ping me.</p>
+                        <p><b>Accessibility:</b> Reduced-motion is respected; backgrounds calm down automatically.</p>
+                    </div>
+                </Panel>
+
+                <Panel title="FAQ">
+                    <dl className="grid gap-3 text-[13px] leading-7">
+                        <div>
+                            <dt className="font-black text-[#eaf2ff]">How do I request a movie?</dt>
+                            <dd className="ml-4">Use the <a className="underline" href={REQUESTS_URL}>Requests</a> portal and add details. I’ll queue it.</dd>
+                        </div>
+                        <div>
+                            <dt className="font-black text-[#eaf2ff]">Do I need an account?</dt>
+                            <dd className="ml-4">For streaming, yes—ask and I’ll set you up if you’re a friend/fam.</dd>
+                        </div>
+                        <div>
+                            <dt className="font-black text-[#eaf2ff]">Why the retro look?</dt>
+                            <dd className="ml-4">Because the web used to be fun—and this site tries to keep it that way.</dd>
+                        </div>
+                    </dl>
+                </Panel>
+
+                <Panel title="CONTACT">
+                    <div className="flex flex-wrap items-center gap-2 text-[13px] leading-7">
+                        <RetroBtn href="/contact" variant="gold">Email / DM</RetroBtn>
+                        <RetroBtn href="/guestbook" variant="steel">Sign the Guestbook</RetroBtn>
+                    </div>
+                </Panel>
             </div>
 
             {/* Footer */}
@@ -269,11 +168,13 @@ export default function BlogPage() {
             <style jsx global>{`
         @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-60%); } }
         .animate-marquee { animation: marquee 22s linear infinite; }
+        @keyframes blinkOld { 50% { opacity: .1 } }
+        .blink-old { animation: blinkOld 1s steps(2, start) infinite; }
+
         @keyframes tile-pan { from { background-position: 0 0; } to { background-position: 1000px 600px; } }
         @keyframes hue { to { filter: hue-rotate(360deg); } }
         .nebula-hue { animation: hue 30s linear infinite; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
         @media (prefers-reduced-motion: reduce) {
           .animate-marquee, .nebula-hue { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
         }
@@ -282,48 +183,7 @@ export default function BlogPage() {
     )
 }
 
-/* ==================== Helpers & Components ==================== */
-
-function formatDate(iso: string) {
-    return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: '2-digit' })
-}
-
-function PostCard({ post }: { post: Post }) {
-    return (
-        <article className="rounded border border-[#35538f] bg-[linear-gradient(#121d3c,#0c1630)] p-3 text-[#e9f0ff] shadow-[inset_0_1px_0_rgba(255,255,255,.1),0_10px_22px_rgba(0,0,0,.35)]">
-            <header className="mb-1">
-                <h3 className="font-black text-[16px] leading-tight drop-shadow-[0_1px_0_#0e1a38]">
-                    <Link className="hover:underline" href={`/blog/${post.slug}`}>{post.title}</Link>
-                </h3>
-                <div className="text-[11px] text-[#cfe0ff]/80">{formatDate(post.publishedAt)}</div>
-            </header>
-            <p className="text-[13px] leading-6 text-[#dbe9ff]">{post.excerpt}</p>
-            <div className="mt-2 flex flex-wrap gap-1">
-                {post.tags.map(t => (
-                    <span
-                        key={t}
-                        className="rounded border border-[#314b8f] bg-[linear-gradient(#233b79,#132657)] px-2 py-0.5 text-[11px] font-black text-[#eaf2ff] shadow-[inset_0_1px_0_rgba(255,255,255,.15)]"
-                    >
-                        #{t}
-                    </span>
-                ))}
-            </div>
-            <div className="mt-3">
-                <Link
-                    className="inline-block rounded-md border border-[#2f4780] bg-[linear-gradient(#1a2a53,#0e1834)] px-2 py-1 text-[12px] font-black text-[#eef4ff] hover:brightness-110"
-                    href={`/blog/${post.slug}`}
-                >
-                    Read »
-                </Link>
-            </div>
-        </article>
-    )
-}
-
-/* ===== Animated Background (same as home) ===== */
-
-type Star = { x: number; y: number; speed: number; size: number; hue: number; tw: number; layer: number }
-type Comet = { x: number; y: number; vx: number; vy: number; life: number; maxLife: number }
+/* ==================== Animated Background ==================== */
 
 function AnimatedBG90s() {
     return (
@@ -340,6 +200,9 @@ function AnimatedBG90s() {
         </>
     )
 }
+
+type Star = { x: number; y: number; speed: number; size: number; hue: number; tw: number; layer: number }
+type Comet = { x: number; y: number; vx: number; vy: number; life: number; maxLife: number }
 
 function StarfieldCanvas({ density = 1 }: { density?: number }) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -364,6 +227,7 @@ function StarfieldCanvas({ density = 1 }: { density?: number }) {
 
     useEffect(() => {
         reducedMotion.current = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+
         const canvas = canvasRef.current!
         const ctx = canvas.getContext('2d', { alpha: true })!
 
@@ -543,7 +407,11 @@ function NavPill({ href, children }: { href: string; children: React.ReactNode }
             {children}
         </span>
     )
-    return isExternal ? <a href={href}>{inner}</a> : <Link href={href}>{inner}</Link>
+    return isExternal ? (
+        <a href={href}>{inner}</a>
+    ) : (
+        <Link href={href}>{inner}</Link>
+    )
 }
 
 function Panel({

@@ -1,452 +1,642 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import Link from 'next/link'
 
-// =====================
-// tiny helper: network image with graceful fallbacks
-// =====================
-function NetImg({ sources, alt, className }: { sources: string[]; alt: string; className?: string }) {
-  const [i, setI] = useState(0)
+
+const REQUESTS_URL = 'https://requests.thespacewaffles.com/'
+const MOVIES_URL = 'https://jellyfin.thespacewaffles.com/'
+
+export default function Page() {
   return (
-    <img
-      src={sources[i]}
-      alt={alt}
-      className={className}
-      onError={() => setI((v) => (v + 1 < sources.length ? v + 1 : v))}
-    />
+    <main className="relative flex min-h-dvh flex-col text-[#f4f8ff] antialiased selection:bg-cyan-200/40 selection:text-white">
+
+      {/* Animated background layers */}
+      <AnimatedBG90s />
+
+      {/* Top strip */}
+      <div className="border-b border-white/15 bg-gradient-to-b from-[#0c1736] to-[#09122a] py-1 text-[11px] text-[#d7e6ff] shadow-[inset_0_1px_0_rgba(255,255,255,.06)]">
+        <div className="mx-auto flex max-w-[960px] items-center justify-between px-2">
+          <div className="opacity-90">Best viewed at 800×600 • Netscape 4+ • IE5</div>
+          <nav className="space-x-2">
+            <a className="hover:underline" href="/about">About</a>
+            <span className="opacity-60">•</span>
+            <a className="hover:underline" href="/status">Status</a>
+            <span className="opacity-60">•</span>
+            <a className="hover:underline" href="/contact">Contact</a>
+          </nav>
+        </div>
+      </div>
+
+      {/* Header */}
+      <header className="border-b-4 border-[#091436] bg-gradient-to-b from-[#25408a] to-[#142a5a] shadow-[0_10px_28px_rgba(0,0,0,.55)]">
+        <div className="mx-auto flex max-w-[960px] flex-col items-start gap-2 px-2 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <Link href="/" className="no-underline">
+            <div className="leading-none drop-shadow-[0_1px_0_#162856,0_2px_0_#0f1c3c,0_4px_8px_rgba(0,0,0,.45)]">
+              <div className="font-black tracking-[0.02em]">
+                <span className="text-[18px]">THE</span>{' '}
+                <span className="bg-[linear-gradient(#fff1a8,#ffd86f)] bg-clip-text text-[40px] text-transparent [text-shadow:0_1px_0_#73601c,0_2px_0_#574713,0_0_12px_rgba(255,224,90,.5)]">
+                  SPACE
+                </span>{' '}
+                <span className="text-[30px]">WAFFLES</span>
+              </div>
+              <div className="mt-0.5 text-[11px] text-[#cfe3ff]">~ Since 2002 ~</div>
+            </div>
+          </Link>
+
+          <div className="flex flex-wrap gap-2">
+            <RetroBtn href={REQUESTS_URL} variant="gold">📬 Request Movies</RetroBtn>
+            <RetroBtn href={MOVIES_URL} variant="steel">🎬 View Movies</RetroBtn>
+          </div>
+        </div>
+      </header>
+
+      {/* Nav + marquee */}
+      <nav className="border-t border-white/10 bg-gradient-to-b from-[#192a58] to-[#0f1c3e] shadow-[inset_0_-1px_0_rgba(255,255,255,.05),0_8px_20px_rgba(0,0,0,.35)]">
+        <div className="mx-auto max-w-[960px] px-2 py-1">
+          <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[auto_1fr]">
+            {/* Pills: single row, scroll if overflow */}
+            <div className="flex gap-1 flex-nowrap overflow-x-auto no-scrollbar">
+              <NavPill href={REQUESTS_URL}>Request</NavPill>
+              <NavPill href={MOVIES_URL}>Movies</NavPill>
+              <NavPill href="/blog">Blog</NavPill>
+              <NavPill href="/portfolio">Portfolio</NavPill>
+              <NavPill href="/gallery">Gallery</NavPill>
+              <NavPill href="/contact">Contact</NavPill>
+            </div>
+
+            {/* Marquee: CSS animation, clipped to row */}
+            <div className="hidden sm:block overflow-hidden">
+              <div className="animate-marquee whitespace-nowrap py-0.5 text-[#e2edff]">
+                ✨ Welcome to TheSpaceWaffles.com • IDK • Fresh Movies • Request to download • Portfolio • Blog • Gallery ✨
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+
+      {/* 3-col layout (stacks on mobile) */}
+      <div className="mx-auto grid max-w-[960px] grid-cols-1 gap-2 px-2 py-4 md:grid-cols-[220px_1fr_240px]">
+        {/* LEFT */}
+        <aside className="space-y-2">
+          <Panel title="~ Navigation ~">
+            <ul className="list-[square] pl-5 text-[13px] leading-7">
+              <li><a className="font-bold text-[#e5efff] hover:underline" href={REQUESTS_URL}>📬 Request Movies</a></li>
+              <li><a className="font-bold text-[#e5efff] hover:underline" href={MOVIES_URL}>🎬 View Movies</a></li>
+              <li><a className="font-bold text-[#e5efff] hover:underline" href="/blog">📝 Blog</a></li>
+              <li><a className="font-bold text-[#e5efff] hover:underline" href="/portfolio">🧪 Portfolio</a></li>
+              <li><a className="font-bold text-[#e5efff] hover:underline" href="/gallery">🖼️ Gallery</a></li>
+              <li><a className="font-bold text-[#e5efff] hover:underline" href="/guestbook">📔 Guestbook</a></li>
+            </ul>
+            {/* <div className="my-3 h-px bg-gradient-to-r from-transparent via-[#3a5aa3] to-transparent" />
+            <img
+              className="w-full border border-[#27417e]"
+              src="https://cdn11.bigcommerce.com/s-10c6f/images/stencil/1280x1280/products/15522/146063/BAN084-MD__38370.1648218624.jpg?c=2"
+              alt="Under construction"
+            /> */}
+          </Panel>
+
+          <Panel title="Cat">
+            <div className="flex flex-col items-center gap-3">
+              {/* Replace the src with your cat photo path/url */}
+              <figure className="w-full max-w-[260px] rounded-sm border-2 border-[#6e5717] bg-black p-1 shadow-[0_6px_16px_rgba(0,0,0,.45)]">
+                <img
+                  src="/cat.png"
+                  alt="Resident grey tabby"
+                  className="block w-full h-auto object-cover [image-rendering:pixelated]"
+                />
+                <figcaption className="mt-1 text-center text-[11px] text-[#ffeba3]">
+                  Thor
+                </figcaption>
+              </figure>
+            </div>
+          </Panel>
+
+          <Panel title="Badges">
+            <div className="grid grid-cols-2 place-items-center gap-2">
+              {[
+                'https://cyber.dabamos.de/88x31/nedscape_now.gif',
+                'https://cyber.dabamos.de/88x31/ie_exploder.gif',
+                'https://cyber.dabamos.de/88x31/linux.gif',
+                'https://cyber.dabamos.de/88x31/valid-html32.gif',
+                'https://cyber.dabamos.de/88x31/tipsba.gif',
+                'https://cyber.dabamos.de/88x31/midinote.gif',
+              ].map((src) => (
+                <img key={src} src={src} alt="88x31 badge" className="w-[110px] border border-[#27417e] bg-black p-0.5" />
+              ))}
+            </div>
+          </Panel>
+        </aside>
+
+        {/* CENTER */}
+        <section className="space-y-2">
+          <Panel title="WELCOME" shine>
+            <div className="flex flex-col gap-4 md:flex-row">
+              <div className="flex-1">
+                <p className="text-[13px] leading-7">
+                  <b>Space Waffles</b> is a gloriously retro home for my movie library, projects, and posts.
+                  Click around, sign the guestbook, and request what should land next on the <i>Intergalactic Griddle</i>.
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <RetroBtn href={REQUESTS_URL} variant="gold">Request a Title »</RetroBtn>
+                  <RetroBtn href={MOVIES_URL} variant="steel">Open Library »</RetroBtn>
+                </div>
+              </div>
+              <div className="grid w-full max-w-[200px] place-items-center gap-2 self-start md:w-auto">
+                <VisitorCounter />
+                <div className="rounded border border-[#6e5717] bg-[#231a05] px-3 py-1 text-[11px] font-black text-[#ffec9a] shadow-[inset_0_0_0_1px_rgba(255,255,255,.08)]">
+                  NO POP-UPS • NO TRACKERS
+                </div>
+              </div>
+            </div>
+          </Panel>
+
+          <Panel title="Quick Links">
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              <RetroCard href={MOVIES_URL} title="Movies" desc="Freshly added films & series" emoji="🍿" />
+              <RetroCard href={REQUESTS_URL} title="Request" desc="Suggest a movie or show" emoji="📮" />
+              <RetroCard href="/blog" title="Blog" desc="Guides, server notes, & rants" emoji="📝" />
+              <RetroCard href="/portfolio" title="Portfolio" desc="Apps, games, and gizmos" emoji="🧪" />
+              <RetroCard href="/gallery" title="Gallery" desc="Screens, frames, and GIFs" emoji="🖼️" />
+              <RetroCard href="/contact" title="Comm-Link" desc="Email • Discord • etc." emoji="📡" />
+            </div>
+          </Panel>
+
+          <Panel title="Latest Updates">
+            <ul className="ml-4 list-disc text-[13px] leading-7">
+              <li><span className="font-black text-teal-300">[NEW]</span> Starfield redraws each frame (no streak lines). Comets fade away naturally.</li>
+              <li><span className="font-black text-teal-300">[LIB]</span> Classic sci-fi block added — see <a className="underline" href={MOVIES_URL}>View Movies</a>.</li>
+              <li><span className="font-black text-teal-300">[POST]</span> Reverse proxies + certs — <a className="underline" href="/blog">read »</a></li>
+            </ul>
+          </Panel>
+        </section>
+
+        {/* RIGHT */}
+        <aside className="space-y-2">
+          <Panel title="Services">
+            <ServicesBox />
+          </Panel>
+
+          <Panel title="Shout-Box">
+            <p className="mb-2 text-[13px] leading-7">
+              <b>Hello traveler!</b> Sign the guestbook and say hi — requests welcome.
+            </p>
+            <RetroBtn href="/guestbook" variant="gold" small>Sign Guestbook</RetroBtn>
+          </Panel>
+        </aside>
+      </div>
+
+      {/* Footer */}
+      <footer className="mx-auto mt-auto mb-0 max-w-[960px] border border-[#27417e] bg-gradient-to-b from-[#0f1a38] to-[#0b142b] px-3 py-2 text-sm shadow-[inset_0_1px_0_rgba(255,255,255,.08),0_12px_28px_rgba(0,0,0,.35)]">
+        <div className="flex flex-col items-center justify-between gap-2 sm:flex-row">
+          <div className="flex items-center gap-2">
+            <img className="h-[31px] w-[88px] border border-[#27417e] bg-black p-0.5" src="https://cyber.dabamos.de/88x31/pp-free.gif" alt="GIF" />
+            <img className="h-[31px] w-[88px] border border-[#27417e] bg-black p-0.5" src="https://cyber.dabamos.de/88x31/aol_instant3.gif" alt="AIM" />
+          </div>
+          <div className="font-extrabold text-[#dbe8ff] drop-shadow-[0_1px_0_#0e1a38]">
+            © {new Date().getFullYear()} Space Waffles • thespacewaffles.com
+          </div>
+          <div className="text-right">
+            <a className="hover:underline" href="/contact">Email Me</a>
+          </div>
+        </div>
+      </footer>
+
+      {/* Tiny helpers */}
+      <style jsx global>{`
+        @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-60%); } }
+        .animate-marquee { animation: marquee 22s linear infinite; }
+        @keyframes blinkOld { 50% { opacity: .1 } }
+        .blink-old { animation: blinkOld 1s steps(2, start) infinite; }
+
+        /* 90s tiled starfield slow scroll */
+        @keyframes tile-pan {
+          from { background-position: 0 0; }
+          to   { background-position: 1000px 600px; }
+        }
+        /* gentle hue cycle on the nebula glow */
+        @keyframes hue { to { filter: hue-rotate(360deg); } }
+        .nebula-hue { animation: hue 30s linear infinite; }
+
+        @media (prefers-reduced-motion: reduce) {
+          .animate-marquee, .nebula-hue { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+        }
+      `}</style>
+    </main>
   )
 }
 
-// =====================
-// KONAMI / CRT TOGGLE (no deps)
-// =====================
-function useKonami(toggle: () => void) {
-  useEffect(() => {
-    const seq = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a']
-    let idx = 0
-    function onKey(e: KeyboardEvent) {
-      const key = e.key
-      if (key === seq[idx]) { idx++; if (idx === seq.length) { toggle(); idx = 0 } } else { idx = 0 }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [toggle])
+/* ==================== Animated Background ==================== */
+
+function AnimatedBG90s() {
+  return (
+    <>
+      {/* Canvas starfield (twinkle + comets that fade) */}
+      <StarfieldCanvas />
+
+      {/* Tiled sparkle texture that slowly scrolls (pure CSS, very 90s) */}
+      <div
+        className="pointer-events-none fixed inset-0 -z-30 opacity-30 mix-blend-screen"
+        style={{
+          backgroundImage:
+            "url('https://www.transparenttextures.com/patterns/stardust.png')",
+          animation: 'tile-pan 40s linear infinite',
+        }}
+      />
+
+      {/* Nebula glow with hue shift */}
+      <div className="pointer-events-none nebula-hue fixed inset-0 -z-40 bg-[radial-gradient(1100px_780px_at_50%_-10%,rgba(45,70,160,.65),transparent_60%)]" />
+    </>
+  )
 }
 
-function CRTToggle() {
-  const [on, setOn] = useState(false)
-  const toggle = () => setOn(v => !v)
-  useKonami(toggle)
+type Star = { x: number; y: number; speed: number; size: number; hue: number; tw: number; layer: number }
+type Comet = { x: number; y: number; vx: number; vy: number; life: number; maxLife: number }
+
+function StarfieldCanvas({ density = 1 }: { density?: number }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const rafRef = useRef<number | null>(null)
+  const starsRef = useRef<Star[]>([])
+  const cometsRef = useRef<Comet[]>([])
+  const lastRef = useRef<number>(0)
+  const reducedMotion = useRef<boolean>(false)
+
+  const params = useMemo(
+    () => ({
+      baseCount: 120,
+      maxSpeed: 0.28,
+      minSpeed: 0.05,
+      maxSize: 2.0,
+      minSize: 0.6,
+      cometEveryMs: 3000, // average spawn interval target
+      cometFadeRate: 0.0006, // fade per ms (higher = quicker fade)
+    }),
+    []
+  )
+
   useEffect(() => {
-    const root = document.documentElement
-    if (on) root.classList.add('crt')
-    else root.classList.remove('crt')
-  }, [on])
+    reducedMotion.current = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+
+    const canvas = canvasRef.current!
+    const ctx = canvas.getContext('2d', { alpha: true })!
+
+    function resize() {
+      const dpr = Math.max(1, window.devicePixelRatio || 1)
+      const w = window.innerWidth
+      const h = window.innerHeight
+      canvas.width = Math.floor(w * dpr)
+      canvas.height = Math.floor(h * dpr)
+      canvas.style.width = `${w}px`
+      canvas.style.height = `${h}px`
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+
+      // Seed stars across two layers for parallax
+      const area = w * h
+      const factor = area / (1280 * 720)
+      const target = Math.floor(params.baseCount * density * Math.max(0.6, factor))
+      starsRef.current = seedStars(target, w, h, params)
+    }
+
+    let lastComet = 0
+    function frame(ts: number) {
+      if (!lastRef.current) lastRef.current = ts
+      const dt = Math.min(33, ts - lastRef.current)
+      lastRef.current = ts
+
+      draw(ctx, canvas, dt)
+
+      // spawn comets at random intervals
+      if (!reducedMotion.current && ts - lastComet > params.cometEveryMs + Math.random() * 2500) {
+        lastComet = ts
+        spawnComet(canvas)
+      }
+
+      rafRef.current = requestAnimationFrame(frame)
+    }
+
+    resize()
+    window.addEventListener('resize', resize)
+    rafRef.current = requestAnimationFrame(frame)
+    return () => {
+      window.removeEventListener('resize', resize)
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    }
+
+    // --- helpers bound to this closure ---
+    function seedStars(n: number, w: number, h: number, p: typeof params): Star[] {
+      const out: Star[] = []
+      for (let i = 0; i < n; i++) {
+        const layer = Math.random() < 0.6 ? 0 : 1 // far vs near
+        const z = layer === 0 ? Math.random() * 0.6 : 0.6 + Math.random() * 0.4
+        const size = 0.6 + z * (p.maxSize - 0.6)
+        const speed = p.minSpeed + z * (p.maxSpeed - p.minSpeed)
+        const hue = 190 + Math.floor(Math.random() * 80) // cool tones
+        out.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          size,
+          speed,
+          hue,
+          tw: Math.random() * Math.PI * 2,
+          layer,
+        })
+      }
+      return out
+    }
+
+    function spawnComet(c: HTMLCanvasElement) {
+      const fromTop = Math.random() < 0.5
+      const x = -40
+      const y = fromTop ? Math.random() * (c.clientHeight * 0.4) : Math.random() * (c.clientHeight * 0.4) + c.clientHeight * 0.6
+      const vx = 0.7 + Math.random() * 0.5
+      const vy = fromTop ? 0.15 + Math.random() * 0.1 : -(0.15 + Math.random() * 0.1)
+      cometsRef.current.push({ x, y, vx, vy, life: 1, maxLife: 1 })
+      if (cometsRef.current.length > 4) cometsRef.current.shift()
+    }
+
+    function draw(ctx: CanvasRenderingContext2D, c: HTMLCanvasElement, dt: number) {
+      const w = c.clientWidth
+      const h = c.clientHeight
+
+      // ======= CLEAR each frame (so stars leave NO trails) =======
+      ctx.globalCompositeOperation = 'source-over'
+      ctx.clearRect(0, 0, w, h)
+
+      // ---- Stars (lighter blend, but no persistence) ----
+      ctx.globalCompositeOperation = 'lighter'
+      const stars = starsRef.current
+      const drift = Math.sin(perfNow() * 0.0002) * 0.05 // gentle vertical wave
+
+      for (const s of stars) {
+        // twinkle
+        s.tw += (0.002 + Math.random() * 0.003) * dt
+        const twinkle = 0.72 + (s.layer ? 0.28 : 0.2) * Math.sin(s.tw)
+
+        // motion (near layer moves faster)
+        const scale = s.layer ? 1.0 : 0.45
+        s.x += s.speed * dt * 0.055 * scale
+        s.y += drift * dt * scale
+        if (s.x > w + 20) s.x = -20
+        if (s.y > h + 20) s.y = -20
+        if (s.y < -20) s.y = h + 20
+
+        // glow sprite
+        const r = s.size * twinkle
+        const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, r * 2.2)
+        g.addColorStop(0, `hsla(${s.hue},100%,88%,0.95)`)
+        g.addColorStop(0.55, `hsla(${s.hue},100%,70%,0.55)`)
+        g.addColorStop(1, `rgba(255,255,255,0)`)
+        ctx.fillStyle = g
+        ctx.beginPath()
+        ctx.arc(s.x, s.y, r * 2.2, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      // ---- Comets (with lifetime-based fade) ----
+      if (!reducedMotion.current) {
+        for (let i = cometsRef.current.length - 1; i >= 0; i--) {
+          const m = cometsRef.current[i]
+          m.x += m.vx * dt
+          m.y += m.vy * dt
+          m.life -= dt * params.cometFadeRate
+
+          const alpha = Math.max(0, Math.min(1, m.life / m.maxLife))
+          const len = 140 * (0.6 + 0.4 * alpha) // tail shortens as it fades
+          const tx = m.x - m.vx * len
+          const ty = m.y - m.vy * len
+
+          // Tail gradient fades with life (no frame persistence)
+          const lg = ctx.createLinearGradient(m.x, m.y, tx, ty)
+          lg.addColorStop(0, `rgba(255,255,255,${0.9 * alpha})`)
+          lg.addColorStop(1, 'rgba(255,255,255,0)')
+          ctx.strokeStyle = lg
+          ctx.lineWidth = 2 * (0.6 + 0.4 * alpha)
+          ctx.beginPath()
+          ctx.moveTo(m.x, m.y)
+          ctx.lineTo(tx, ty)
+          ctx.stroke()
+
+          // bright core (also fades)
+          ctx.fillStyle = `rgba(255,255,255,${0.9 * alpha})`
+          ctx.beginPath()
+          ctx.arc(m.x, m.y, 1.8 * (0.6 + 0.4 * alpha), 0, Math.PI * 2)
+          ctx.fill()
+
+          if (alpha <= 0 || m.x > w + 50 || m.y < -50 || m.y > h + 50) {
+            cometsRef.current.splice(i, 1)
+          }
+        }
+      }
+    }
+
+    function perfNow() {
+      return (typeof performance !== 'undefined' && performance.now()) || Date.now()
+    }
+  }, [density, params])
+
+  return <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 -z-20" aria-hidden />
+}
+
+/* ==================== Retro UI Bits ==================== */
+
+function RetroBtn({
+  href,
+  children,
+  variant = 'steel',
+  small = false,
+}: {
+  href: string
+  children: React.ReactNode
+  variant?: 'steel' | 'gold'
+  small?: boolean
+}) {
+  const base =
+    'inline-block no-underline font-black rounded-md border shadow-[inset_0_1px_0_rgba(255,255,255,.24),0_2px_0_#0a1226,0_10px_18px_rgba(0,0,0,.35)] hover:brightness-105 transition';
+  const size = small ? 'px-3 py-1 text-[12px]' : 'px-3.5 py-2 text-[13px]';
+  const look =
+    variant === 'gold'
+      ? 'border-[#6e5717] text-[#231900] bg-[linear-gradient(#ffe084,#ffbe3a)] [text-shadow:0_1px_0_rgba(255,255,255,.7)]'
+      : 'border-[#2f4780] text-[#eef4ff] bg-[linear-gradient(#1a2a53,#0e1834)]';
   return (
-    <button onClick={toggle} className="crt-toggle" title="Toggle CRT/Scanlines (Konami code works too)">
-      {on ? 'CRT: ON' : 'CRT: OFF'}
+    <a href={href} className={`${base} ${size} ${look}`}>
+      {children}
+    </a>
+  )
+}
+
+function NavPill({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      className="rounded border border-transparent bg-[linear-gradient(#25408a,#142a5a)] px-2 py-1 text-[13px] font-extrabold text-[#e5efff] shadow-[inset_0_1px_0_rgba(255,255,255,.08)] hover:border-[#2f457c] hover:bg-[#102149]"
+    >
+      {children}
+    </a>
+  )
+}
+
+function Panel({
+  title,
+  children,
+  shine = false,
+}: {
+  title: string
+  children: React.ReactNode
+  shine?: boolean
+}) {
+  return (
+    <section className="rounded border border-[#27417e] bg-[#0f142b] shadow-[inset_0_1px_0_rgba(255,255,255,.08),0_10px_22px_rgba(0,0,0,.35)]">
+      <div
+        className={[
+          'border-b border-[#1d315f] px-3 py-2 font-black tracking-[0.01em] text-[#eef4ff] shadow-[0_1px_0_#13244c]',
+          shine ? 'bg-[linear-gradient(#2e4e9a,#1b366f)]' : 'bg-[linear-gradient(#2a4589,#183163)]',
+        ].join(' ')}
+      >
+        {title}
+      </div>
+      <div className="px-3 py-3 text-[13px] leading-7">{children}</div>
+    </section>
+  )
+}
+
+function MiniBtn({ children }: { children: React.ReactNode }) {
+  return (
+    <button className="rounded-md border border-[#314b8f] bg-[linear-gradient(#233b79,#132657)] px-2 py-1 text-[12px] font-black text-[#eaf2ff] shadow-[inset_0_1px_0_rgba(255,255,255,.15)] hover:brightness-105">
+      {children}
     </button>
   )
 }
 
-// =====================
-// VISITOR COUNTER (local only)
-// =====================
+function RetroCard({ href, title, desc, emoji }: { href: string; title: string; desc: string; emoji: string }) {
+  return (
+    <a
+      href={href}
+      className="block cursor-pointer rounded-lg border border-[#35538f] bg-[linear-gradient(#121d3c,#0c1630)] p-3 text-[#e9f0ff] shadow-[inset_0_1px_0_rgba(255,255,255,.1),0_10px_22px_rgba(0,0,0,.35)] hover:brightness-110"
+    >
+      <div className="mb-1 flex items-center gap-2 font-black">
+        <span className="grid h-[22px] w-[22px] place-items-center rounded-full border border-[#405ea0] bg-[linear-gradient(#2e457d,#1a2b54)] shadow-[inset_0_1px_0_rgba(255,255,255,.25)]">
+          {emoji}
+        </span>
+        <span>{title}</span>
+      </div>
+      <div className="text-[12px] text-[#cfe0ff]">{desc}</div>
+    </a>
+  )
+}
+
+
 function VisitorCounter() {
-  const [count, setCount] = useState<number | null>(null)
+  const [n, setN] = useState(0)
   useEffect(() => {
-    const key = 'spacewaffles_hits'
-    const n = parseInt(localStorage.getItem(key) || '0', 10) + 1
-    localStorage.setItem(key, String(n))
-    setCount(n)
+    const k = 'spacewaffles_hits'
+    const v = (parseInt(localStorage.getItem(k) || '0') || 0) + 1
+    localStorage.setItem(k, String(v))
+    setN(v)
   }, [])
   return (
-    <div className="hitbox"><span className="mono">VISITORS:</span><span className="counter mono">{count ?? '0000'}</span></div>
+    <div className="w-full rounded border border-[#314c8a] bg-[linear-gradient(#0b152d,#0a1225)] px-3 py-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,.12)]">
+      <div className="inline-block rounded border-2 border-[#618f78] bg-[#aee7c8] px-3 py-1 font-mono text-[13px] leading-none tracking-[0.22em] text-[#0a100f] shadow-[0_1px_0_rgba(255,255,255,.7)]">
+        {String(n).padStart(6, '0')}
+      </div>
+      <div className="mt-1 text-[10px] text-[#b8c6da]">VISITORS</div>
+    </div>
   )
 }
 
-// =====================
-// SPARKLE TRAIL (90s cursor bling)
-// =====================
-function SparkleTrail() {
-  useEffect(() => {
-    const root = document.body
-    function spawn(e: MouseEvent) {
-      const s = document.createElement('span')
-      s.textContent = '✨'
-      s.className = 'spark'
-      s.style.left = e.pageX + 'px'
-      s.style.top = e.pageY + 'px'
-      root.appendChild(s)
-      setTimeout(() => s.remove(), 1000)
+function ServicesBox() {
+  type Row = { name: string; url: string; status?: number; ok?: boolean; error?: string }
+
+  const services: Row[] = [
+    { name: 'Main Site', url: 'https://thespacewaffles.com/' },
+    { name: 'Requests', url: 'https://requests.thespacewaffles.com/' },
+    { name: 'Movies', url: MOVIES_URL },
+    { name: 'NovaExpense', url: 'https://novaexpense.com/' },
+  ]
+
+  const [rows, setRows] = React.useState<Row[]>(services)
+  const [ts, setTs] = React.useState<number | null>(null)
+  const [loading, setLoading] = React.useState(false)
+
+  const refresh = React.useCallback(async () => {
+    try {
+      setLoading(true)
+      const res = await fetch('/api/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ urls: services.map(s => s.url) }),
+        cache: 'no-store',
+      })
+      type Result = Row & { status?: number; ok?: boolean; error?: string }
+
+      const data = (await res.json()) as Partial<{ results: Result[]; ts: number }>
+      const results: Result[] = Array.isArray(data.results) ? data.results : []
+      const map = new Map<string, Result>(
+        results.map<[string, Result]>(r => [r.url, r])
+      )
+      setRows(services.map(s => ({ ...s, ...(map.get(s.url) || {}) })))
+      setTs(data.ts || Date.now())
+    } catch {
+      /* keep previous rows */
+    } finally {
+      setLoading(false)
     }
-    window.addEventListener('mousemove', spawn)
-    return () => window.removeEventListener('mousemove', spawn)
   }, [])
-  return null
-}
 
-// =====================
-// BLING LAYER: random floaters (🧇,⭐,🛸)
-// =====================
-function BlingLayer() {
-  const ref = useRef<HTMLDivElement | null>(null)
-  useEffect(() => {
-    const icons = ['🧇', '⭐', '🛸', '🌟', '💾', '💿']
-    const el = ref.current!
-    const id = setInterval(() => {
-      const b = document.createElement('div')
-      b.className = 'bling'
-      b.textContent = icons[Math.floor(Math.random() * icons.length)]
-      b.style.left = Math.random() * 100 + 'vw'
-      b.style.animationDuration = 6 + Math.random() * 6 + 's'
-      el.appendChild(b)
-      setTimeout(() => b.remove(), 14000)
-    }, 1200)
-    return () => clearInterval(id)
-  }, [])
-  return <div ref={ref} className="blingLayer" aria-hidden />
-}
+  React.useEffect(() => { refresh() }, [refresh])
 
-// =====================
-// CSS SCROLLERS (replace <marquee>) — typed and TS-safe
-// =====================
-function Scroller({ children, className = '', speed = 24, reverse = false }: { children: React.ReactNode; className?: string; speed?: number; reverse?: boolean }) {
+  const dot = (code?: number) => {
+    if (!code) return 'bg-gray-400'
+    if (code >= 200 && code < 300) return 'bg-emerald-400'
+    if (code >= 300 && code < 400) return 'bg-amber-400'
+    return 'bg-rose-400'
+  }
+  const label = (r: Row) => (r.status ? `${r.status}` : r.error ? r.error : 'timeout')
+
   return (
-    <div className={`scroller ${reverse ? 'reverse' : ''} ${className}`} style={{ ['--speed' as any]: `${speed}s` }}>
-      <div className="track">
-        <div className="chunk">{children}</div>
-        <div className="chunk">{children}</div>
-        <div className="chunk">{children}</div>
-        <div className="chunk">{children}</div>
+    <div className="space-y-2">
+      <div className="flex items-center justify-between text-[12px] text-[#cfe0ff]">
+        <span className="opacity-80">HTTP status by service</span>
+        <button
+          onClick={refresh}
+          className="rounded border border-[#2f4780] bg-[linear-gradient(#1a2a53,#0e1834)] px-2 py-0.5 text-[11px] font-black text-[#eef4ff] active:translate-y-px disabled:opacity-60"
+          disabled={loading}
+        >
+          {loading ? 'Checking…' : 'Check Again'}
+        </button>
       </div>
-    </div>
-  )
-}
 
-function VScroller({ children, className = '', speed = 28, reverse = false }: { children: React.ReactNode; className?: string; speed?: number; reverse?: boolean }) {
-  return (
-    <div className={`vscroller ${reverse ? 'reverse' : ''} ${className}`} style={{ ['--speed' as any]: `${speed}s` }}>
-      <div className="track">
-        <div className="chunk">{children}</div>
-        <div className="chunk">{children}</div>
-        <div className="chunk">{children}</div>
-        <div className="chunk">{children}</div>
-      </div>
-    </div>
-  )
-}
-
-// =====================
-// MAIN PAGE — MAXIMALIST 90s CHAOS++ (now with more images)
-// =====================
-export default function Page() {
-  return (
-    <div id="geo-root">
-      <CRTToggle />
-      <SparkleTrail />
-      <BlingLayer />
-
-      {/* flying banner */}
-      <div className="flyingBanner">WELCOME TO THE INTERGALACTIC GRIDDLE • WELCOME TO THE INTERGALACTIC GRIDDLE • </div>
-
-      {/* header bar */}
-      <center>
-        <table className="headerTable" width="1100" cellPadding={0} cellSpacing={0}>
-          <tbody>
-            <tr>
-              <td className="headerCell">
-                <div className="logo">THE <span>SPACE</span> WAFFLES</div>
-                <Scroller className="marq" speed={30}>
-                  <span>✨ Serving hot bytes since 1999* (*time is a flat waffle). ✨&nbsp;&nbsp; </span>
-                </Scroller>
-                <VisitorCounter />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </center>
-
-      {/* side tickers */}
-      <VScroller className="sideMarq left" speed={32}>
-        <div>
-          ★ NEW: Desktop mini-game soon! <br />★ Blog refresh! <br />★ Hire me!
-        </div>
-      </VScroller>
-      <VScroller className="sideMarq right" speed={36} reverse>
-        <div>
-          ☎ Contact • 🧪 Projects • 🖼 Gallery • 📝 Blog
-        </div>
-      </VScroller>
-
-      {/* three-column TABLE LAYOUT like it's 1999 */}
-      <center>
-        <table className="layout" width="1100" cellPadding={12} cellSpacing={0}>
-          <tbody>
-            <tr>
-              {/* LEFT NAV */}
-              <td className="leftCol" width="240" valign="top">
-                <NetImg
-                  sources={[
-                    'https://www.animatedimages.org/data/media/562/animated-under-construction-image-0035.gif',
-                    'https://placehold.co/240x40/000/FFF?text=UNDER+CONSTRUCTION'
-                  ]}
-                  alt="Under Construction"
-                  className="uc"
-                />
-                <div className="navBox">
-                  <div className="navTitle rainbowText">~ NAVIGATION ~</div>
-                  <ul className="navList">
-                    <li><a href="/blog">📝 Blog</a></li>
-                    <li><a href="/projects">🧪 Projects</a></li>
-                    <li><a href="/gallery">🖼️ Gallery</a></li>
-                    <li><a href="/contact">📡 Contact</a></li>
-                    <li><a href="/guestbook">📔 Guestbook</a></li>
-                  </ul>
-                </div>
-                <div className="webring">
-                  <div className="navTitle">WEB-RING</div>
-                  <div className="ringBtns">
-                    <button>&laquo; Prev</button>
-                    <button>Random</button>
-                    <button>Next &raquo;</button>
+      <ul className="rounded border border-[#203e7a] bg-[#0a1223]/60 divide-y divide-[#1d315f]">
+        {rows.map((r) => (
+          <li key={r.url}>
+            <a
+              href={r.url}
+              className="group block px-2 py-2 hover:bg-[#0c1530]/70"
+              title={r.url}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="truncate font-black text-[#eaf2ff] group-hover:underline">
+                    {r.name}
+                  </div>
+                  <div className="truncate text-[11px] text-[#9db9f0]">
+                    {new URL(r.url).host}
                   </div>
                 </div>
-                <div className="badges">
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/nedscape_now.gif']} alt="Netscape Now" />
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/ie_exploder.gif', 'https://placehold.co/88x31?text=IE6']} alt="IE6" />
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/valid-html32.gif', 'https://placehold.co/88x31?text=HTML+3.2']} alt="Valid HTML 3.2" />
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/linux.gif', 'https://placehold.co/88x31?text=LINUX']} alt="Linux" />
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/aol_instant3.gif', 'https://placehold.co/88x31?text=Y2K']} alt="Y2K" />
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/spotify.gif', 'https://placehold.co/88x31?text=WIFI']} alt="WiFi" />
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/tipsba.gif', 'https://placehold.co/88x31?text=UNDER']} alt="Under Construction" />
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/midinote.gif', 'https://placehold.co/88x31?text=UNDER']} alt="Under Construction" />
+                <div className="shrink-0 flex items-center gap-2 font-mono text-[11px] text-[#cfe3ff]">
+                  <span className={`inline-block h-2.5 w-2.5 rounded-full ${dot(r.status)}`} />
+                  <span className="tabular-nums">{label(r)}</span>
                 </div>
-              </td>
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
 
-              {/* CENTER MAIN */}
-              <td className="centerCol" valign="top">
-                <table className="panel" width="100%">
-                  <tbody>
-                    <tr><td className="panelHead"><span className="blink">ABOUT / NEWS</span></td></tr>
-                    <tr>
-                      <td className="panelBody spacious">
-                        <p>
-                          hi! i’m <b>space waffles</b> 🧇🚀 — i build weird, delightful things for the web & machines.
-                          expect late-90s aesthetic, early-web chaos, and modern internals under the hood.
-                        </p>
-                        <ul>
-                          <li>themes: retro net, playful UX, tiny electronics, game dev</li>
-                          <li>stack: next.js, node, c/c++, embedded, realtime</li>
-                          <li>currently: shipping projects + writing on the blog</li>
-                        </ul>
-                        <hr className="rainbow" />
-                        <div className="linkGrid">
-                          <a className="linkBtn pop" href="/blog">ENTER BLOG &raquo;</a>
-                          <a className="linkBtn pop" href="/projects">PROJECTS LAB &raquo;</a>
-                          <a className="linkBtn pop" href="/gallery">GIF / GALLERY &raquo;</a>
-                          <a className="linkBtn pop" href="/contact">CONTACT HQ &raquo;</a>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <table className="panel" width="100%">
-                  <tbody>
-                    <tr><td className="panelHead">FEATURED STRIP</td></tr>
-                    <tr>
-                      <td className="panelBody spacious">
-                        <Scroller speed={35}>
-                          <NetImg sources={['https://picsum.photos/seed/waffleA/240/140', 'https://placehold.co/240x140?text=IMG']} alt="img" className="stripImg" />
-                        </Scroller>
-                        <div className="ticker">★ SPACE • WAFFLES • DOT • COM • SPACE • WAFFLES • DOT • COM ★</div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <table className="panel" width="100%">
-                  <tbody>
-                    <tr><td className="panelHead">LATEST UPDATES</td></tr>
-                    <tr>
-                      <td className="panelBody spacious">
-                        <ul className="updates bigList">
-                          <li><span className="date">[NEW]</span> launched the <b>Intergalactic Griddle</b> v1 — welcome aboard!</li>
-                          <li><span className="date">[DEV]</span> prototyping a tiny waffle-sweeper game for the desktop page.</li>
-                          <li><span className="date">[POST]</span> blogged about pixel shaders &amp; syrup (coming soon).</li>
-                        </ul>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </td>
-
-              {/* RIGHT SIDEBAR */}
-              <td className="rightCol" width="280" valign="top">
-                <table className="panel catPanel" width="100%">
-                  <tbody>
-                    <tr><td className="panelHead">WAFFLE THE GREY TABBY</td></tr>
-                    <tr>
-                      <td className="panelBody catBody spacious">
-                        <div className="catFrame">
-                          <NetImg
-                            sources={[
-                              '/thor.jpg',
-                            ]}
-                            alt="Grey tabby cat mascot"
-                          />
-                        </div>
-                        <p className="small">Resident site guardian. Click to hear a <i>mrrrp</i>.</p>
-                        <button className="meowBtn" onClick={() => { const a = new Audio('https://cdn.pixabay.com/download/audio/2021/08/08/audio_53e3af9c3d.mp3?filename=cat-meow-6226.mp3'); a.volume = 0.35; a.play().catch(() => { }) }}>▶ MEOW</button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <div className="stickerWall">
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/construction.gif', 'https://placehold.co/180x40?text=LINUX']} alt="Linux" />
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/archlinux.gif']} alt="Under Construction" />
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/hash_now.gif', 'https://placehold.co/180x40?text=Y2K']} alt="Y2K" />
-                  <NetImg sources={['https://cyber.dabamos.de/88x31/pp-free.gif', 'https://placehold.co/180x40?text=GIF']} alt="88x31" />
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </center>
-
-      {/* FOOTER */}
-      <center>
-        <div className="footer">© {new Date().getFullYear()} space waffles — thespacewaffles.com • <span className="mono">Last Updated:</span> {new Date().toLocaleDateString()}</div>
-      </center>
-
-      {/* AUDIO preload (optional) */}
-      <audio id="meowAudio" src="https://cdn.pixabay.com/download/audio/2021/08/08/audio_53e3af9c3d.mp3?filename=cat-meow-6226.mp3" preload="none" />
-
-      {/* GLOBAL 90s CSS */}
-      <style jsx global>{`
-        :root { --c1:#ff00ff; --c2:#00ffff; --c3:#ffde59; --c4:#00ffb2; --ink:#ffffff; }
-        html, body { height: 100%; }
-        body {
-          background:
-            url('https://www.transparenttextures.com/patterns/stardust.png') repeat fixed,
-            radial-gradient(1200px 700px at 50% -10%, #121232, #000);
-          color: var(--ink);
-          font-family: 'Verdana', 'Tahoma', 'Geneva', sans-serif;
-          text-shadow: 0 0 4px rgba(255,255,255,0.25);
-          image-rendering: pixelated;
-          animation: bg-pan 30s linear infinite;
-        }
-        @keyframes bg-pan { from { background-position: 0 0, 50% 0; } to { background-position: 1000px 600px, 50% 0; } }
-        a { color: #00ffff; text-decoration: underline; }
-        a:hover { color: #ffde59; }
-        .mono { font-family: 'Courier New', monospace; }
-
-        .crt-toggle { position:fixed; right:12px; bottom:12px; z-index:9999; font-size:11px; color:#fff; background:#000a; border:2px ridge #fff5; padding:8px 12px; border-radius:8px; box-shadow:0 0 12px #0ff6; }
-        .crt::before { content:''; position:fixed; inset:0; pointer-events:none; background:
-          repeating-linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(255,255,255,0.06) 1px, transparent 1px, transparent 3px),
-          radial-gradient(ellipse at center, rgba(0,0,0,0) 60%, rgba(0,0,0,0.25) 100%);
-          mix-blend-mode: soft-light; z-index: 9998; }
-
-        .flyingBanner { position: fixed; top: 10px; left: -100vw; right: 0; z-index: 50; color:#fff; font-weight:900; letter-spacing:2px;
-          text-shadow:0 0 8px #0ff,0 0 14px #f0f; filter: drop-shadow(0 0 8px #0ff);
-          animation: fly 18s linear infinite; white-space: nowrap; }
-        @keyframes fly { 0% { transform: translateX(0); } 100% { transform: translateX(200vw); } }
-
-        .sideMarq { position: fixed; top: 140px; width: 170px; height: 60vh; background:#000a; border:4px groove #7df; color:#fff; z-index: 40; font-size:12px; padding:6px; }
-        .sideMarq.left { left: 12px; }
-        .sideMarq.right { right: 12px; }
-
-        /* Scrollers */
-        .scroller { overflow:hidden; white-space:nowrap; }
-        .scroller .track { display:inline-block; animation: scroll var(--speed) linear infinite; }
-        .scroller.reverse .track { animation-direction: reverse; }
-        .scroller .chunk { display:inline-block; padding-right: 2rem; }
-        @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-
-        .vscroller { overflow:hidden; }
-        .vscroller .track { display:flex; flex-direction:column; gap:8px; animation: scrollY var(--speed) linear infinite; }
-        .vscroller.reverse .track { animation-direction: reverse; }
-        .vscroller .chunk { padding-bottom: 1rem; }
-        @keyframes scrollY { from { transform: translateY(0); } to { transform: translateY(-50%); } }
-
-        .headerTable { border:6px ridge #8ef; background: linear-gradient(90deg, rgba(0,0,0,0.6), rgba(0,0,30,0.6)); margin-top:48px; box-shadow: 0 0 24px #0ff6; }
-        .headerCell { padding: 16px; }
-        .logo { font-size: 58px; font-weight: 900; letter-spacing: 4px; text-align:center; margin:10px 0 14px; 
-          background: linear-gradient(90deg, #fff, #ff00ff, #00ffff, #ffff00, #fff);
-          -webkit-background-clip: text; background-clip: text; color: transparent;
-          text-shadow: 0 0 12px rgba(255,255,255,0.5), 0 0 18px rgba(0,255,255,0.35);
-          animation: hue 6s linear infinite;
-        }
-        @keyframes hue { to { filter: hue-rotate(360deg); } }
-        .logo span { filter: drop-shadow(0 0 10px #ff00ff); }
-        .marq { font-size: 14px; background: #000a; border:2px dashed #fff7; padding:8px; margin-top:6px; }
-        .hitbox { margin-top:8px; display:flex; gap:8px; align-items:center; justify-content:center; font-size:14px; }
-        .counter { background:#000; border:2px inset #fff9; padding:4px 10px; letter-spacing:3px; }
-
-        .heroWrap { margin-top: 14px; }
-        .heroStrip { border:6px ridge #ff9; background:#120015aa; box-shadow:0 0 18px #f0f6; }
-        .heroItem { display:inline-block; padding: 8px; }
-        .heroItem img { width: 180px; height: 120px; object-fit: cover; border:6px outset #fff7; background:#000; box-shadow:0 0 12px #fff5; }
-
-        .layout { background: rgba(0,0,0,0.55); border:8px groove #58f; margin-top:16px; }
-        .leftCol { background: rgba(10,10,40,0.6); }
-        .centerCol { background: rgba(15,15,15,0.6); }
-        .rightCol { background: rgba(20,10,40,0.6); }
-
-        .uc { width: 100%; image-rendering: pixelated; border-bottom: 2px dashed #fff3; }
-        .navBox { margin-top:12px; border:6px ridge #9cf; background: #001018cc; }
-        .navTitle { text-align:center; font-weight:bold; padding:8px; background: linear-gradient(180deg, #0ff6, #00f6); border-bottom: 1px dashed #fff6; letter-spacing:1px; }
-        .navList { list-style: square inside; padding: 10px 12px 14px; margin:0; line-height:2.0; font-size:14px; }
-        .webring { margin-top:12px; border:6px ridge #9cf; background:#010b15cc; padding-bottom:8px; }
-        .ringBtns { display:flex; gap:8px; padding:8px; justify-content:center; }
-        .ringBtns button { font-size:12px; padding:6px 10px; border:4px outset #7df; background:#00334a; color:#cfffff; cursor:pointer; }
-        .badges { margin-top:12px; display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; justify-items:center; padding:8px; border:6px ridge #9cf; background:#020b18cc; }
-        .badges img { width: 110px; image-rendering: pixelated; border:2px inset #fff5; background:#000; }
-
-        .panel { border-collapse: collapse; margin: 14px 0; }
-        .panelHead { background: linear-gradient(90deg, #220033, #003355); padding:10px; font-weight:900; letter-spacing:1px; border:6px ridge #7cf; text-align:center; }
-        .panelBody { background: #0008; border:6px ridge #7cf; padding:20px; font-size:16px; line-height:1.95; word-spacing:1px; }
-        .spacious p { margin: 0 0 16px; }
-        .spacious ul { margin: 8px 0 0 0; }
-        .blink { animation: blink 1s steps(2, start) infinite; }
-        @keyframes blink { to { visibility: hidden; } }
-        .rainbow { height:8px; border:none; margin:16px 0; background: linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet); box-shadow:0 0 12px #fff5; }
-        .linkGrid { display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:10px; }
-        .linkBtn { display:block; text-align:center; font-weight:800; color:#001; text-decoration:none; background: linear-gradient(180deg, #ffde59, #ffa500); border:6px outset #ffef99; padding:12px; box-shadow: 0 0 14px #ffde59aa; }
-        .linkBtn:hover { filter: hue-rotate(15deg) saturate(1.3); transform: translateY(-1px); }
-        .pop { animation: pop 1.2s ease-in-out infinite alternate; }
-        @keyframes pop { from { transform: scale(1); } to { transform: scale(1.03); } }
-
-        .updates { padding-left:18px; }
-        .bigList li { margin: 12px 0; }
-        .date { color:#7cffc4; font-weight:bold; }
-        .ticker { margin-top: 12px; padding: 8px 10px; background:#000a; border:4px inset #0ff8; color:#0ff; font-weight:900; letter-spacing:2px; overflow:hidden; white-space:nowrap; animation: ticker 22s linear infinite; }
-        @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-
-        .catPanel .panelHead { background: linear-gradient(90deg, #330033, #660033); }
-        .catBody { text-align:center; }
-        .catFrame { border:8px ridge #ff9; background:#111; padding:6px; width: 200px; margin: 10px auto; box-shadow:0 0 12px #ff9a; }
-        .catFrame img { width:100%; height:auto; display:block; image-rendering: pixelated; }
-        .small { font-size: 12px; color:#ffd; }
-        .meowBtn { font-size:12px; padding:8px 12px; border:6px outset #ffc; background:#442; color:#ffd; cursor:pointer; }
-        .meowBtn:active { border-style: inset; }
-
-        .stickerWall { margin-top:12px; display:grid; gap:10px; justify-items:center; }
-        .stickerWall img { width: 180px; image-rendering: pixelated; border: 4px outset #fff5; background:#000; }
-
-        .footer { font-size: 12px; margin: 18px 0 90px; opacity: 0.95; text-shadow:0 0 6px #0ff; }
-
-        .rainbowText { background: linear-gradient(90deg, #ff00ff, #00ffff, #ffff00, #ff00ff); -webkit-background-clip:text; background-clip:text; color:transparent; filter: drop-shadow(0 0 6px #fff8); }
-
-        .spark { position:absolute; transform: translate(-50%, -50%); animation: sparkfade 1s ease-out forwards; pointer-events:none; }
-        @keyframes sparkfade { from { opacity:1; transform: translate(-50%, -50%) scale(1); } to { opacity:0; transform: translate(-50%, -120%) scale(0.6); } }
-
-        .blingLayer { position:fixed; inset:0; pointer-events:none; z-index:30; }
-        .bling { position: absolute; top: 100vh; font-size: 18px; animation: floatUp linear forwards; opacity:0.9; text-shadow:0 0 6px #fff; }
-        @keyframes floatUp { from { transform: translateY(0); } to { transform: translateY(-120vh) rotate(360deg); } }
-      `}</style>
+      <div className="text-right text-[11px] text-[#cfe0ff]/70">
+        Last check: {ts ? new Date(ts).toLocaleTimeString() : '—'}
+      </div>
     </div>
   )
 }
+
