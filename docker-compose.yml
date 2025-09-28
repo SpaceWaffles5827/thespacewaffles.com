@@ -4,6 +4,7 @@ services:
   web:
     build: .
     container_name: thespacewaffles-app
+    restart: unless-stopped
     environment:
       NODE_ENV: "production"
     ports:
